@@ -1,0 +1,9 @@
+plugins {
+    id "com.moowork.node" version "1.2.0"
+}
+
+node {
+    version = '8.4.0'
+    yarnVersion = '0.27.5'
+    download = true
+}
