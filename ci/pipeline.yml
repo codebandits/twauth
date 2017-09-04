@@ -12,7 +12,6 @@ jobs:
   plan:
   - aggregate:
     - get: ci-image
-      trigger: true
     - get: api-source
       trigger: true
     - get: api-version
@@ -50,7 +49,6 @@ jobs:
   plan:
   - aggregate:
     - get: ci-image
-      trigger: true
     - get: chat-source
       trigger: true
     - get: chat-version
@@ -90,7 +88,6 @@ jobs:
   plan:
   - aggregate:
     - get: ci-image
-      passed: [publish ci image]
     - get: e2e-source
       trigger: true
     - get: api-artifact
@@ -185,13 +182,13 @@ resources:
   source:
     bucket: twauth-artifacts
     json_key: ((gcr-key))
-    regexp: api/api-(.*).tgz
+    regexp: api-(.*).tgz
 - name: chat-artifact
   type: google-cloud-storage
   source:
     bucket: twauth-artifacts
     json_key: ((gcr-key))
-    regexp: chat/chat-(.*).tgz
+    regexp: chat-(.*).tgz
 - name: api-source
   type: git
   source:
