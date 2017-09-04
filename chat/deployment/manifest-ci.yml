@@ -1,5 +1,4 @@
 name: twauth-chat
-path: ../build
 memory: 16MB
 routes:
 - route: twauth-chat-ci.cfapps.io

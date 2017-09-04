@@ -10,15 +10,18 @@ jobs:
 
 - name: api
   plan:
-  - get: ci-image
-    passed: [publish ci image]
-    trigger: true
-  - get: api-source
-    trigger: true
+  - aggregate:
+    - get: ci-image
+      trigger: true
+    - get: api-source
+      trigger: true
+    - get: api-version
+      params: {bump: patch}
   - task: test and build
     image: ci-image
     config:
       inputs:
+      - name: api-version
       - name: api-source
       outputs:
       - name: api-build
@@ -29,25 +32,34 @@ jobs:
         args:
         - -exc
         - |
-          ./gradlew api:test api:assemble
-          mkdir -p ../api-build/build/libs
-          cp -r api/build/libs/api-0.0.1-SNAPSHOT.jar ../api-build/build/libs
-          cp -r api/deployment ../api-build
-  - put: cf-ci
+          VERSION=$(cat ../api-version/number)
+          BUILD_DIR=../api-build/api-$VERSION
+          ./gradlew -Pversion=$VERSION api:test api:assemble
+          mkdir -p $BUILD_DIR
+          cp -r api/build/libs/api-$VERSION.jar api/deployment $BUILD_DIR
+          echo "path: ../api-$VERSION.jar" | tee -a $BUILD_DIR/deployment/manifest-*.yml
+          cd $BUILD_DIR
+          tar czf ../api-$VERSION.tgz .
+  - put: api-artifact
     params:
-      manifest: api-build/deployment/manifest-ci.yml
+      file: ./api-build/api-*.tgz
+  - put: api-version
+    params: {file: api-version/version}
 
 - name: chat
   plan:
-  - get: ci-image
-    passed: [publish ci image]
-    trigger: true
-  - get: chat-source
-    trigger: true
+  - aggregate:
+    - get: ci-image
+      trigger: true
+    - get: chat-source
+      trigger: true
+    - get: chat-version
+      params: {bump: patch}
   - task: test and build
     image: ci-image
     config:
       inputs:
+      - name: chat-version
       - name: chat-source
       outputs:
       - name: chat-build
@@ -58,25 +70,74 @@ jobs:
         args:
         - -exc
         - |
+          VERSION=$(cat ../chat-version/number)
+          BUILD_DIR=../chat-build/chat-$VERSION
           ./gradlew chat:yarn_install chat:yarn_test chat:yarn_run_build
-          cp -r chat/deployment chat/build ../chat-build
-  - put: cf-ci
+          mkdir -p $BUILD_DIR
+          cp -r chat/deployment $BUILD_DIR
+          cp -r chat/build $BUILD_DIR/chat-$VERSION
+          echo "path: ../chat-$VERSION" | tee -a $BUILD_DIR/deployment/manifest-*.yml
+          cd $BUILD_DIR
+          tar czf ../chat-$VERSION.tgz .
+  - put: chat-artifact
     params:
-      manifest: chat-build/deployment/manifest-ci.yml
+      file: ./chat-build/chat-*.tgz
+  - put: chat-version
+    params: {file: chat-version/version}
 
 - name: e2e
+  serial: true
   plan:
   - aggregate:
     - get: ci-image
       passed: [publish ci image]
     - get: e2e-source
       trigger: true
-    - get: api-source
+    - get: api-artifact
       trigger: true
       passed: [api]
-    - get: chat-source
+    - get: chat-artifact
       trigger: true
       passed: [chat]
+  - aggregate:
+    - task: extract api
+      image: ci-image
+      config:
+        inputs:
+        - name: api-artifact
+        outputs:
+        - name: api-artifact-extract
+        platform: linux
+        run:
+          dir: api-artifact
+          path: sh
+          args:
+          - -exc
+          - |
+            tar xzf api-*.tgz -C ../api-artifact-extract
+    - task: extract chat
+      image: ci-image
+      config:
+        inputs:
+        - name: chat-artifact
+        outputs:
+        - name: chat-artifact-extract
+        platform: linux
+        run:
+          dir: chat-artifact
+          path: sh
+          args:
+          - -exc
+          - |
+            tar xzf chat-*.tgz -C ../chat-artifact-extract
+  - aggregate:
+    - put: cf-ci
+      params:
+        manifest: api-artifact-extract/deployment/manifest-ci.yml
+    - put: cf-ci
+      params:
+        manifest: chat-artifact-extract/deployment/manifest-ci.yml
+
   - task: end to end tests
     image: ci-image
     params:
@@ -95,7 +156,42 @@ jobs:
         - e2e:yarn_install
         - e2e:yarn_test
 
+resource_types:
+- name: semver-latest
+  type: docker-image
+  source:
+    repository: concourse/semver-resource
+- name: google-cloud-storage
+  type: docker-image
+  source:
+    repository: frodenas/gcs-resource
 resources:
+- name: api-version
+  type: semver-latest
+  source:
+    driver: gcs
+    bucket: twauth-versions
+    key: api-version
+    json_key: ((gcr-key))
+- name: chat-version
+  type: semver-latest
+  source:
+    driver: gcs
+    bucket: twauth-versions
+    key: chat-version
+    json_key: ((gcr-key))
+- name: api-artifact
+  type: google-cloud-storage
+  source:
+    bucket: twauth-artifacts
+    json_key: ((gcr-key))
+    regexp: api/api-(.*).tgz
+- name: chat-artifact
+  type: google-cloud-storage
+  source:
+    bucket: twauth-artifacts
+    json_key: ((gcr-key))
+    regexp: chat/chat-(.*).tgz
 - name: api-source
   type: git
   source:
