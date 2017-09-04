@@ -8,6 +8,35 @@ jobs:
     params:
       build: ci-image-source/ci/docker
 
+- name: api
+  plan:
+  - get: ci-image
+    passed: [publish ci image]
+    trigger: true
+  - get: api-source
+    trigger: true
+  - task: test and build
+    image: ci-image
+    config:
+      inputs:
+      - name: api-source
+      outputs:
+      - name: api-build
+      platform: linux
+      run:
+        dir: api-source
+        path: sh
+        args:
+        - -exc
+        - |
+          ./gradlew api:test api:assemble
+          mkdir -p ../api-build/build/libs
+          cp -r api/build/libs/api-0.0.1-SNAPSHOT.jar ../api-build/build/libs
+          cp -r api/deployment ../api-build
+  - put: cf-ci
+    params:
+      manifest: api-build/deployment/manifest-ci.yml
+
 - name: chat
   plan:
   - get: ci-image
@@ -41,12 +70,13 @@ jobs:
     trigger: true
   - get: cf-ci
     trigger: true
-    passed: [chat]
+    passed: [api, chat]
   - get: ci-image
     passed: [publish ci image]
   - task: end to end tests
     image: ci-image
     params:
+      API_URL: http://twauth-api-ci.cfapps.io/
       CHAT_URL: http://twauth-chat-ci.cfapps.io/
     config:
       inputs:
@@ -62,6 +92,13 @@ jobs:
         - e2e:yarn_test
 
 resources:
+- name: api-source
+  type: git
+  source:
+    uri: https://github.com/codebandits/twauth.git
+    branch: master
+    paths:
+    - api
 - name: chat-source
   type: git
   source:
@@ -101,6 +138,7 @@ resources:
 groups:
 - name: pipeline
   jobs:
+  - api
   - chat
   - e2e
 - name: ci-image
