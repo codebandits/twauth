@@ -66,13 +66,17 @@ jobs:
 
 - name: e2e
   plan:
-  - get: e2e-source
-    trigger: true
-  - get: cf-ci
-    trigger: true
-    passed: [api, chat]
-  - get: ci-image
-    passed: [publish ci image]
+  - aggregate:
+    - get: ci-image
+      passed: [publish ci image]
+    - get: e2e-source
+      trigger: true
+    - get: api-source
+      trigger: true
+      passed: [api]
+    - get: chat-source
+      trigger: true
+      passed: [chat]
   - task: end to end tests
     image: ci-image
     params:
