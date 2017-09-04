@@ -1,0 +1,51 @@
+resources:
+- name: app-source
+  type: git
+  source:
+    uri: https://github.com/codebandits/twauth.git
+    branch: master
+    ignore_paths:
+    - ci
+- name: ci-image-source
+  type: git
+  source:
+    uri: https://github.com/codebandits/twauth.git
+    branch: master
+    paths:
+    - ci/docker
+- name: ci-image
+  type: docker-image
+  source:
+    repository: gcr.io/twauth-178923/ci
+    username: _json_key
+    password: ((gcr-key))
+
+jobs:
+- name: publish ci image
+  plan:
+  - get: ci-image-source
+    trigger: true
+  - put: ci-image
+    params:
+      build: ci-image-source/ci/docker
+- name: tests
+  plan:
+  - get: app-source
+    trigger: true
+  - get: ci-image
+    passed: [publish ci image]
+    trigger: true
+  - task: end to end tests
+    image: ci-image
+    config:
+      inputs:
+      - name: app-source
+      platform: linux
+      run:
+        dir: app-source
+        path: xvfb-run
+        args:
+        - -a
+        - ./gradlew
+        - e2e:yarn_install
+        - e2e:yarn_test
