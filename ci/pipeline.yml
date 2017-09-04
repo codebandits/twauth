@@ -1,3 +1,66 @@
+jobs:
+
+- name: publish ci image
+  plan:
+  - get: ci-image-source
+    trigger: true
+  - put: ci-image
+    params:
+      build: ci-image-source/ci/docker
+
+- name: chat
+  plan:
+  - get: ci-image
+    passed: [publish ci image]
+    trigger: true
+  - get: app-source
+    trigger: true
+  - task: test and build
+    image: ci-image
+    config:
+      inputs:
+      - name: app-source
+      outputs:
+      - name: chat-build
+      platform: linux
+      run:
+        dir: app-source
+        path: sh
+        args:
+        - -exc
+        - |
+          ./gradlew chat:yarn_install chat:yarn_test chat:yarn_run_build
+          cp -r chat/deployment chat/build ../chat-build
+  - put: cf-ci
+    params:
+      manifest: chat-build/deployment/manifest-ci.yml
+
+- name: e2e
+  plan:
+  - get: app-source
+    passed: [chat]
+  - get: cf-ci
+    passed: [chat]
+    trigger: true
+  - get: ci-image
+    passed: [publish ci image]
+  - task: end to end tests
+    image: ci-image
+    params:
+      CHAT_URL: http://twauth-chat-ci.cfapps.io/
+    config:
+      inputs:
+      - name: app-source
+      platform: linux
+      run:
+        dir: app-source
+        path: xvfb-run
+        args:
+        - -a
+        - ./gradlew
+        - e2e:yarn_install
+        - e2e:yarn_test
+
 resources:
 - name: app-source
   type: git
@@ -19,33 +82,20 @@ resources:
     repository: gcr.io/twauth-178923/ci
     username: _json_key
     password: ((gcr-key))
+- name: cf-ci
+  type: cf
+  source:
+    api: ((cf.api))
+    username: ((cf.username))
+    password: ((cf.password))
+    organization: ((cf.organization))
+    space: ci
 
-jobs:
-- name: publish ci image
-  plan:
-  - get: ci-image-source
-    trigger: true
-  - put: ci-image
-    params:
-      build: ci-image-source/ci/docker
-- name: tests
-  plan:
-  - get: app-source
-    trigger: true
-  - get: ci-image
-    passed: [publish ci image]
-    trigger: true
-  - task: end to end tests
-    image: ci-image
-    config:
-      inputs:
-      - name: app-source
-      platform: linux
-      run:
-        dir: app-source
-        path: xvfb-run
-        args:
-        - -a
-        - ./gradlew
-        - e2e:yarn_install
-        - e2e:yarn_test
+groups:
+- name: pipeline
+  jobs:
+  - chat
+  - e2e
+- name: ci-image
+  jobs:
+  - publish ci image
