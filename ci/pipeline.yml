@@ -13,18 +13,18 @@ jobs:
   - get: ci-image
     passed: [publish ci image]
     trigger: true
-  - get: app-source
+  - get: chat-source
     trigger: true
   - task: test and build
     image: ci-image
     config:
       inputs:
-      - name: app-source
+      - name: chat-source
       outputs:
       - name: chat-build
       platform: linux
       run:
-        dir: app-source
+        dir: chat-source
         path: sh
         args:
         - -exc
@@ -37,11 +37,11 @@ jobs:
 
 - name: e2e
   plan:
-  - get: app-source
-    passed: [chat]
-  - get: cf-ci
-    passed: [chat]
+  - get: e2e-source
     trigger: true
+  - get: cf-ci
+    trigger: true
+    passed: [chat]
   - get: ci-image
     passed: [publish ci image]
   - task: end to end tests
@@ -50,10 +50,10 @@ jobs:
       CHAT_URL: http://twauth-chat-ci.cfapps.io/
     config:
       inputs:
-      - name: app-source
+      - name: e2e-source
       platform: linux
       run:
-        dir: app-source
+        dir: e2e-source
         path: xvfb-run
         args:
         - -a
@@ -62,13 +62,20 @@ jobs:
         - e2e:yarn_test
 
 resources:
-- name: app-source
+- name: chat-source
   type: git
   source:
     uri: https://github.com/codebandits/twauth.git
     branch: master
-    ignore_paths:
-    - ci
+    paths:
+    - chat
+- name: e2e-source
+  type: git
+  source:
+    uri: https://github.com/codebandits/twauth.git
+    branch: master
+    paths:
+    - e2e
 - name: ci-image-source
   type: git
   source:
