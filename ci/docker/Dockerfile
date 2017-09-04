@@ -5,3 +5,5 @@ RUN apt-get update && apt-get install -y \
     libgconf-2-4 \
     libxss1 && \
     apt-get clean
+
+ENV CI=true
