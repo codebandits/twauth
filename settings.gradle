@@ -1,3 +1,4 @@
 rootProject.name = 'twauth'
+include 'api'
 include 'chat'
 include 'e2e'

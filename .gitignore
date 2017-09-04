@@ -2,5 +2,7 @@
 .idea/
 *.iml
 node_modules/
+build/
+out/
 
 ci/secrets.yml
