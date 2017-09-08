@@ -148,14 +148,13 @@ jobs:
       - name: e2e-source
       platform: linux
       run:
-        user: browsertests
         dir: e2e-source
-        path: xvfb-run
+        path: sh
         args:
-        - -a
-        - ./gradlew
-        - e2e:yarn_install
-        - e2e:yarn_test
+        - -exc
+        - |
+          chown -R browsertests:browsertests .
+          su browsertests -c 'xvfb-run ./gradlew e2e:test'
 
 resource_types:
 - name: semver-latest
@@ -166,6 +165,7 @@ resource_types:
   type: docker-image
   source:
     repository: frodenas/gcs-resource
+
 resources:
 - name: api-version
   type: semver-latest
