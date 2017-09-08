@@ -1,9 +1,36 @@
-plugins {
-    id "com.moowork.node" version "1.2.0"
+group 'com.twauth'
+version '1.0-SNAPSHOT'
+
+buildscript {
+    repositories {
+        maven { url 'http://dl.bintray.com/kotlin/kotlin-eap-1.2' }
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+        classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.0-RC3'
+    }
 }
 
-node {
-    version = '8.4.0'
-    yarnVersion = '0.27.5'
-    download = true
+apply plugin: 'kotlin'
+apply plugin: 'org.junit.platform.gradle.plugin'
+
+repositories {
+    maven { url 'http://dl.bintray.com/kotlin/kotlin-eap-1.2' }
+    mavenCentral()
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlinVersion"
+    testCompile "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"
+    testCompile "org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion"
+    testCompile "org.seleniumhq.selenium:selenium-java:$seleniumJavaVersion"
+    testCompile "org.seleniumhq.selenium:lift:$seleniumJavaVersion"
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
 }
