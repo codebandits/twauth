@@ -31,5 +31,7 @@ class TwauthChatLoginTest : BrowserTestBase() {
         driver.findElement(By.id("password")).sendKeys(TWITTER_PASSWORD)
         driver.findElement(By.cssSelector("input[type=submit]")).click()
         driver.switchTo().window(driver.windowHandles.first())
+
+        assertThat(driver.findElement(By.tagName("body")).text, containsString("Welcome $TWITTER_USERNAME"))
     }
 }
