@@ -142,11 +142,13 @@ jobs:
       CHAT_URL: http://twauth-chat-ci.cfapps.io/
       TWIITER_USERNAME: ((e2e.twitter_username))
       TWIITER_PASSWORD: ((e2e.twitter_password))
+    privileged: true
     config:
       inputs:
       - name: e2e-source
       platform: linux
       run:
+        user: browsertests
         dir: e2e-source
         path: xvfb-run
         args:

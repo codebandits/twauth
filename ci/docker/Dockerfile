@@ -22,6 +22,4 @@ RUN CHROMEDRIVER_VERSION=`curl -sS chromedriver.storage.googleapis.com/LATEST_RE
 
 ENV CI=true
 
-RUN useradd buildbot --create-home --shell /bin/bash
-
-USER buildbot
+RUN useradd browsertests --create-home --shell /bin/bash
