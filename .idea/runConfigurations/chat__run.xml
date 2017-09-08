@@ -1,0 +1,15 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="chat: run" type="BashConfigurationType" factoryName="Bash" singleton="true">
+    <option name="INTERPRETER_OPTIONS" value="" />
+    <option name="INTERPRETER_PATH" value="/bin/bash" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/chat" />
+    <option name="PARENT_ENVS" value="true" />
+    <option name="SCRIPT_NAME" value="yarn" />
+    <option name="PARAMETERS" value="start" />
+    <module name="" />
+    <envs />
+    <method>
+      <option name="RunConfigurationTask" enabled="true" run_configuration_name="chat: install" run_configuration_type="BashConfigurationType" />
+    </method>
+  </configuration>
+</component>
