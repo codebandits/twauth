@@ -140,8 +140,8 @@ jobs:
     params:
       API_URL: http://twauth-api-ci.cfapps.io/
       CHAT_URL: http://twauth-chat-ci.cfapps.io/
-      TWIITER_USERNAME: ((e2e.twitter_username))
-      TWIITER_PASSWORD: ((e2e.twitter_password))
+      TWITTER_USERNAME: ((e2e.twitter_username))
+      TWITTER_PASSWORD: ((e2e.twitter_password))
     privileged: true
     config:
       inputs:
