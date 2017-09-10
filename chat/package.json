@@ -3,10 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "enzyme": "^2.9.1",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
+    "react-redux": "^5.0.6",
+    "react-router-dom": "^4.2.2",
     "react-scripts": "1.0.13",
-    "react-twitter-widgets": "^1.5.0"
+    "react-test-renderer": "^15.6.1",
+    "react-twitter-widgets": "^1.5.1",
+    "react-websocket": "^1.2.0",
+    "redux": "^3.7.2",
+    "redux-devtools-extension": "^2.13.2",
+    "redux-mock-store": "^1.2.3",
+    "redux-storage": "^4.1.2",
+    "redux-storage-engine-localstorage": "^1.1.4"
   },
   "scripts": {
     "start": "react-scripts start",

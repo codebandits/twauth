@@ -1,0 +1,1 @@
+global.WebSocket = jest.fn()

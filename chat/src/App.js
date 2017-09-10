@@ -1,19 +1,22 @@
-import React, {Component} from 'react';
-import './App.css';
-import { Share } from 'react-twitter-widgets'
+import React from 'react'
+import './App.css'
+import PrivateRoute from './modules/routing/components/PrivateRoute'
+import AuthenticationHeader from './modules/authentication/components/AuthenticationHeader'
+import LoginPage from './modules/authentication/components/LoginPage'
+import ChatPage from './modules/chat/components/ChatPage'
+import {BrowserRouter as Router, Route, Redirect, Switch} from 'react-router-dom'
 
-import uuid from 'uuid'
+const App = () => (
+    <Router>
+        <div className="App">
+            <AuthenticationHeader/>
+            <Switch>
+                <Redirect exact from="/" to="/chat"/>
+                <Route path="/login" component={LoginPage}/>
+                <PrivateRoute path="/chat" component={ChatPage}/>
+            </Switch>
+        </div>
+    </Router>
+)
 
-class App extends Component {
-    render() {
-        const message = uuid()
-        return (
-            <div className="App">
-              <h1>Tweet to login:</h1>
-              <Share url="''" options={{text: message, hashtags: 'twauth', size: 'large'}}/>
-            </div>
-        );
-    }
-}
-
-export default App;
+export default App
