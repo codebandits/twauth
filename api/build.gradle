@@ -31,14 +31,23 @@ repositories {
 	mavenCentral()
 	maven { url "https://repo.spring.io/snapshot" }
 	maven { url "https://repo.spring.io/milestone" }
+	maven { url 'https://jitpack.io' }
 }
 
 
 dependencies {
 	compile('org.springframework.boot:spring-boot-starter-actuator')
 	compile('org.springframework.boot:spring-boot-starter-web')
+	compile('org.springframework.boot:spring-boot-starter-websocket')
+	compile 'com.github.codebandits.results:results:master-SNAPSHOT'
 	compile("org.jetbrains.kotlin:kotlin-stdlib-jre8:${kotlinVersion}")
 	compile("org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}")
+	compile("org.twitter4j:twitter4j-core:${twitter4jVersion}")
+	compile("org.twitter4j:twitter4j-stream:${twitter4jVersion}")
 	runtime('org.springframework.boot:spring-boot-devtools')
 	testCompile('org.springframework.boot:spring-boot-starter-test')
+	testCompile "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"
+	testCompile "org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion"
+	testCompile "com.nhaarman:mockito-kotlin:$mockitoKotlinVersion"
+	testCompile 'com.github.codebandits.results:results-test:master-SNAPSHOT'
 }
