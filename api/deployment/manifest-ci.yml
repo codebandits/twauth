@@ -1,4 +1,5 @@
 name: twauth-api
+memory: 768MB
 routes:
 - route: twauth-api-ci.cfapps.io
 buildpack: java_buildpack

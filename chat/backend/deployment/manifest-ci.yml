@@ -1,5 +1,5 @@
 name: twauth-chat-backend
-memory: 64MB
+memory: 768MB
 routes:
 - route: twauth-chat-backend-ci.cfapps.io
 buildpack: java_buildpack
