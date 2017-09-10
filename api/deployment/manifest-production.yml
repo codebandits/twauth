@@ -1,5 +1,5 @@
 name: twauth-api
-memory: 768MB
+memory: 1GB
 routes:
 - route: twauth.io
 buildpack: java_buildpack
