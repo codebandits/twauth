@@ -131,6 +131,11 @@ jobs:
     - put: cf-ci
       params:
         manifest: api-artifact-extract/deployment/manifest-ci.yml
+        environment_variables:
+          TWITTER_CONSUMER-KEY: ((twitter.ci.consumer-key))
+          TWITTER_CONSUMER-SECRET: ((twitter.ci.consumer-secret))
+          TWITTER_ACCESS-TOKEN: ((twitter.ci.access-token))
+          TWITTER_ACCESS-TOKEN-SECRET: ((twitter.ci.access-token-secret))
     - put: cf-ci
       params:
         manifest: chat-artifact-extract/deployment/manifest-ci.yml
