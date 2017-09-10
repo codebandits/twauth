@@ -1,17 +1,31 @@
 package com.twauth.e2e
 
-import org.hamcrest.MatcherAssert
+import com.google.gson.Gson
+import org.apache.http.HttpStatus
+import org.apache.http.client.methods.HttpGet
+import org.apache.http.impl.client.BasicResponseHandler
+import org.apache.http.impl.client.HttpClientBuilder
+import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.Test
-import org.openqa.selenium.By
 
-class ApiRunningTest : BrowserTestBase() {
+class ApiRunningTest {
 
     private val API_URL = System.getenv("API_URL") ?: "http://localhost:8080"
 
     @Test
     fun `should be running`() {
 
-        driver.navigate().to(API_URL + "/application/health")
-        MatcherAssert.assertThat(driver.findElement(By.tagName("body")).text, org.hamcrest.Matchers.containsString("UP"))
+        val client = HttpClientBuilder.create().build()
+        val response = client.execute(HttpGet(API_URL + "/application/health"))
+        assertThat(response.statusLine.statusCode, equalTo(HttpStatus.SC_OK))
+
+        val json = BasicResponseHandler().handleResponse(response)
+        val health = Gson().fromJson(json, ActuatorHealthStatus::class.java)
+        assertThat(health.status, equalTo("UP"))
     }
+
+    private data class ActuatorHealthStatus(
+            val status: String
+    )
 }
