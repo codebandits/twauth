@@ -51,7 +51,7 @@ class Login extends React.Component {
     }
 }
 
-const mapStateToProps = (state) => ({authenticated: !!state.authentication.token, loginSocket: `ws://${state.configuration.twauthHost}/login`})
+const mapStateToProps = (state) => ({authenticated: !!state.authentication.token, loginSocket: state.configuration.twauthLoginSocket})
 const mapDispatchToProps = (dispatch) => ({authenticate: (payload) => dispatch({type: 'AUTHENTICATION_SET', payload: payload})})
 
 export default connect(mapStateToProps, mapDispatchToProps)(Login)

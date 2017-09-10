@@ -1,1 +1,1 @@
-twauthHost: localhost:9001
+twauthLoginSocket: ws://localhost:9001/login

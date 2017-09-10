@@ -1,0 +1,5 @@
+name: twauth-chat-web
+memory: 16MB
+routes:
+- route: twauth.chat
+buildpack: staticfile_buildpack

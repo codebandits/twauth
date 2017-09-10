@@ -1,1 +1,1 @@
-twauthHost: twauth-api-ci.cfapps.io
+twauthLoginSocket: wss://twauth-api-ci.cfapps.io:4443/login
