@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test
 
 class ApiRunningTest {
 
-    private val API_URL = System.getenv("API_URL") ?: "http://localhost:8080"
+    private val API_URL = System.getenv("API_URL") ?: "http://localhost:9001"
 
     @Test
     fun `should be running`() {

@@ -17,6 +17,7 @@ class TwauthChatLoginTest : BrowserTestBase() {
     fun `should authenticate users who tweet`() {
 
         driver.navigate().to(CHAT_URL)
+        assertThat(driver.findElement(By.cssSelector("[data-reactroot]")), displayed())
         assertThat(driver.findElement(By.tagName("body")).text, containsString("Tweet to login"))
 
         val tweetWidgetFrame = driver.findElement(By.cssSelector("iframe[title='Twitter Tweet Button']"))
