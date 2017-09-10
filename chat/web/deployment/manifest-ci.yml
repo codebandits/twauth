@@ -1,5 +1,5 @@
 name: twauth-chat-web
 memory: 16MB
 routes:
-- route: twauth-chat-web-ci.cfapps.io
+- route: twauth-chat-ci.cfapps.io
 buildpack: staticfile_buildpack
