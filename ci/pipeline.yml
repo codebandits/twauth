@@ -43,45 +43,82 @@ jobs:
     params:
       file: ./api-build/api-*.tgz
   - put: api-version
-    params: {file: api-version/version}
+    params: {file: api-version/number}
 
-- name: chat
+- name: chat web
   plan:
   - aggregate:
     - get: ci-image
-    - get: chat-source
+    - get: chat-web-source
       trigger: true
-    - get: chat-version
+    - get: chat-web-version
       params: {bump: patch}
   - task: test and build
     image: ci-image
     config:
       inputs:
-      - name: chat-version
-      - name: chat-source
+      - name: chat-web-version
+      - name: chat-web-source
       outputs:
-      - name: chat-build
+      - name: chat-web-build
       platform: linux
       run:
-        dir: chat-source
+        dir: chat-web-source
         path: sh
         args:
         - -exc
         - |
-          VERSION=$(cat ../chat-version/number)
-          BUILD_DIR=../chat-build/chat-$VERSION
-          ./gradlew chat:yarn_install chat:yarn_test chat:yarn_run_build
+          VERSION=$(cat ../chat-web-version/number)
+          BUILD_DIR=../chat-web-build/chat-web-$VERSION
+          ./gradlew chat/web:yarn_install chat/web:yarn_test chat/web:yarn_run_build
           mkdir -p $BUILD_DIR
-          cp -r chat/deployment $BUILD_DIR
-          cp -r chat/build $BUILD_DIR/chat-$VERSION
-          echo "path: ../chat-$VERSION" | tee -a $BUILD_DIR/deployment/manifest-*.yml
+          cp -r chat/web/deployment $BUILD_DIR
+          cp -r chat/web/build $BUILD_DIR/chat-web-$VERSION
+          echo "path: ../chat-web-$VERSION" | tee -a $BUILD_DIR/deployment/manifest-*.yml
           cd $BUILD_DIR
-          tar czf ../chat-$VERSION.tgz .
-  - put: chat-artifact
+          tar czf ../chat-web-$VERSION.tgz .
+  - put: chat-web-artifact
     params:
-      file: ./chat-build/chat-*.tgz
-  - put: chat-version
-    params: {file: chat-version/version}
+      file: ./chat-web-build/chat-web-*.tgz
+  - put: chat-web-version
+    params: {file: chat-web-version/number}
+
+- name: chat backend
+  plan:
+  - aggregate:
+    - get: ci-image
+    - get: chat-backend-source
+      trigger: true
+    - get: chat-backend-version
+      params: {bump: patch}
+  - task: test and build
+    image: ci-image
+    config:
+      inputs:
+      - name: chat-backend-version
+      - name: chat-backend-source
+      outputs:
+      - name: chat-backend-build
+      platform: linux
+      run:
+        dir: chat-backend-source
+        path: sh
+        args:
+        - -exc
+        - |
+          VERSION=$(cat ../chat-backend-version/number)
+          BUILD_DIR=../chat-backend-build/chat-backend-$VERSION
+          ./gradlew -Pversion=$VERSION chat/backend:test chat/backend:assemble
+          mkdir -p $BUILD_DIR
+          cp -r chat/backend/build/libs/chat-backend-$VERSION.jar chat/backend/deployment $BUILD_DIR
+          echo "path: ../chat-backend-$VERSION.jar" | tee -a $BUILD_DIR/deployment/manifest-*.yml
+          cd $BUILD_DIR
+          tar czf ../chat-backend-$VERSION.tgz .
+  - put: chat-backend-artifact
+    params:
+      file: ./chat-backend-build/chat-backend-*.tgz
+  - put: chat-backend-version
+    params: {file: chat-backend-version/number}
 
 - name: e2e
   serial: true
@@ -93,9 +130,14 @@ jobs:
     - get: api-artifact
       trigger: true
       passed: [api]
-    - get: chat-artifact
+    - get: chat-web-artifact
       trigger: true
-      passed: [chat]
+      passed:
+      - chat web
+    - get: chat-backend-artifact
+      trigger: true
+      passed:
+      - chat backend
   - aggregate:
     - task: extract api
       image: ci-image
@@ -112,21 +154,36 @@ jobs:
           - -exc
           - |
             tar xzf api-*.tgz -C ../api-artifact-extract
-    - task: extract chat
+    - task: extract chat web
       image: ci-image
       config:
         inputs:
-        - name: chat-artifact
+        - name: chat-web-artifact
         outputs:
-        - name: chat-artifact-extract
+        - name: chat-web-artifact-extract
         platform: linux
         run:
-          dir: chat-artifact
+          dir: chat-web-artifact
           path: sh
           args:
           - -exc
           - |
-            tar xzf chat-*.tgz -C ../chat-artifact-extract
+            tar xzf chat-*.tgz -C ../chat-web-artifact-extract
+    - task: extract chat backend
+      image: ci-image
+      config:
+        inputs:
+        - name: chat-backend-artifact
+        outputs:
+        - name: chat-backend-artifact-extract
+        platform: linux
+        run:
+          dir: chat-backend-artifact
+          path: sh
+          args:
+          - -exc
+          - |
+            tar xzf chat-backend-*.tgz -C ../chat-backend-artifact-extract
   - aggregate:
     - put: cf-ci
       params:
@@ -138,7 +195,10 @@ jobs:
           TWITTER_ACCESS-TOKEN-SECRET: ((twitter.ci.access-token-secret))
     - put: cf-ci
       params:
-        manifest: chat-artifact-extract/deployment/manifest-ci.yml
+        manifest: chat-web-artifact-extract/deployment/manifest-ci.yml
+    - put: cf-ci
+      params:
+        manifest: chat-backend-artifact-extract/deployment/manifest-ci.yml
 
   - task: end to end tests
     image: ci-image
@@ -179,12 +239,19 @@ resources:
     bucket: twauth-versions
     key: api-version
     json_key: ((gcr-key))
-- name: chat-version
+- name: chat-web-version
   type: semver-latest
   source:
     driver: gcs
     bucket: twauth-versions
-    key: chat-version
+    key: chat-web-version
+    json_key: ((gcr-key))
+- name: chat-backend-version
+  type: semver-latest
+  source:
+    driver: gcs
+    bucket: twauth-versions
+    key: chat-backend-version
     json_key: ((gcr-key))
 - name: api-artifact
   type: google-cloud-storage
@@ -192,12 +259,18 @@ resources:
     bucket: twauth-artifacts
     json_key: ((gcr-key))
     regexp: api-(.*).tgz
-- name: chat-artifact
+- name: chat-web-artifact
   type: google-cloud-storage
   source:
     bucket: twauth-artifacts
     json_key: ((gcr-key))
-    regexp: chat-(.*).tgz
+    regexp: chat-web-(.*).tgz
+- name: chat-backend-artifact
+  type: google-cloud-storage
+  source:
+    bucket: twauth-artifacts
+    json_key: ((gcr-key))
+    regexp: chat-backend-(.*).tgz
 - name: api-source
   type: git
   source:
@@ -205,13 +278,20 @@ resources:
     branch: master
     paths:
     - api
-- name: chat-source
+- name: chat-web-source
   type: git
   source:
     uri: https://github.com/codebandits/twauth.git
     branch: master
     paths:
-    - chat
+    - chat/web
+- name: chat-backend-source
+  type: git
+  source:
+    uri: https://github.com/codebandits/twauth.git
+    branch: master
+    paths:
+    - chat/backend
 - name: e2e-source
   type: git
   source:
@@ -245,7 +325,8 @@ groups:
 - name: pipeline
   jobs:
   - api
-  - chat
+  - chat web
+  - chat backend
   - e2e
 - name: ci-image
   jobs:
