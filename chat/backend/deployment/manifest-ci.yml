@@ -1,0 +1,7 @@
+name: twauth-chat-backend
+memory: 64MB
+routes:
+- route: twauth-chat-backend-ci.cfapps.io
+buildpack: java_buildpack
+env:
+  SPRING_PROFILES_ACTIVE: ci

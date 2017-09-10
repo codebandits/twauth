@@ -2,7 +2,7 @@
   <configuration default="false" name="chat: install" type="BashConfigurationType" factoryName="Bash">
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="INTERPRETER_PATH" value="/bin/bash" />
-    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/chat" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/chat/web" />
     <option name="PARENT_ENVS" value="true" />
     <option name="SCRIPT_NAME" value="yarn" />
     <option name="PARAMETERS" value="install" />

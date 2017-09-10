@@ -1,1 +1,4 @@
 hashtag: twauth_local
+
+server:
+  port: 9001

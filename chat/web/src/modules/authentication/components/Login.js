@@ -11,7 +11,7 @@ class Login extends React.Component {
 
     componentWillMount() {
         this.socketHandler = new LoginSocketHandler(
-            this.props.loginUrl,
+            this.props.loginSocket,
             this._tweetRequest.bind(this),
             this._authenticate.bind(this)
         )
@@ -51,7 +51,7 @@ class Login extends React.Component {
     }
 }
 
-const mapStateToProps = (state) => ({authenticated: !!state.authentication.token})
+const mapStateToProps = (state) => ({authenticated: !!state.authentication.token, loginSocket: `ws://${state.configuration.twauthHost}/login`})
 const mapDispatchToProps = (dispatch) => ({authenticate: (payload) => dispatch({type: 'AUTHENTICATION_SET', payload: payload})})
 
 export default connect(mapStateToProps, mapDispatchToProps)(Login)

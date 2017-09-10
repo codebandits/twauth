@@ -1,4 +1,5 @@
 rootProject.name = 'twauth'
 include 'api'
-include 'chat'
+include 'chat/web'
+include 'chat/backend'
 include 'e2e'
