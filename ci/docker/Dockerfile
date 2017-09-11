@@ -21,5 +21,6 @@ RUN CHROMEDRIVER_VERSION=`curl -sS chromedriver.storage.googleapis.com/LATEST_RE
     && ln -fs /opt/chromedriver-$CHROMEDRIVER_VERSION/chromedriver /usr/local/bin/chromedriver
 
 ENV CI=true
+ENV GRADLE_OPTS="-Dorg.gradle.daemon=false"
 
 RUN useradd browsertests --create-home --shell /bin/bash
