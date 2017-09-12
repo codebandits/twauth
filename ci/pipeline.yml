@@ -285,7 +285,7 @@ jobs:
         args:
         - -exc
         - |
-          tar xzf chat-*.tgz -C ../chat-web-artifact-extract
+          tar xzf chat-web-*.tgz -C ../chat-web-artifact-extract
   - put: cf-production
     params:
       manifest: chat-web-artifact-extract/deployment/manifest-production.yml
@@ -312,7 +312,7 @@ jobs:
         args:
         - -exc
         - |
-          tar xzf api-*.tgz -C ../chat-backend-artifact-extract
+          tar xzf chat-backend-*.tgz -C ../chat-backend-artifact-extract
   - put: cf-production
     params:
       manifest: chat-backend-artifact-extract/deployment/manifest-production.yml
