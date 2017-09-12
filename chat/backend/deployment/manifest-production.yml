@@ -4,4 +4,4 @@ routes:
 - route: twauth.chat/api
 buildpack: java_buildpack
 env:
-  SPRING_PROFILES_ACTIVE: ci
+  SPRING_PROFILES_ACTIVE: production
