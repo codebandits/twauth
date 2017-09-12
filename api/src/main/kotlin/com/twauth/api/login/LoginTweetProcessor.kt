@@ -41,18 +41,18 @@ class LoginTweetProcessor(
     override fun onStatus(status: Status) {
         logger.info("""received Status: "{}"""", status.text)
 
-        val message = status.text.replace("#$hashtag", "").trim()
-        val user = loginClientManager.get(message)
+        val text = status.text.replace("#$hashtag", "").trim()
+        val user = loginClientManager.get(text)
         when (user) {
             is Success -> {
-                logger.info("""received login tweet "{}" from user {}""", user.content.message, status.user.screenName)
+                logger.info("""received login tweet "{}" from user {}""", user.content.tweetText, status.user.screenName)
 
-                val authentication = LoginMessage.Payload.Authentication(token = "batman", handle = status.user.screenName)
-                val loginMessage = LoginMessage(messageType = LoginMessage.MessageType.AUTHENTICATION, payload = authentication)
+                val authentication = LoginMessage.Data.Authentication(token = "batman", handle = status.user.screenName)
+                val loginMessage = LoginMessage(messageType = LoginMessage.MessageType.AUTHENTICATION, data = authentication)
                 val json = ObjectMapper().writeValueAsString(loginMessage)
                 user.content.session.sendMessage(TextMessage(json))
             }
-            is Failure -> logger.info("""received unexpected tweet "{}" from user {}""", message, status.user.screenName)
+            is Failure -> logger.info("""received unexpected tweet "{}" from user {}""", text, status.user.screenName)
         }
     }
 

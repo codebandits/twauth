@@ -13,7 +13,7 @@ class LoginWebSocketHandler(private val loginClientManager: LoginClientManager) 
 
     override fun afterConnectionEstablished(session: WebSocketSession) {
         val loginInstructions = loginClientManager.register(session)
-        logger.info("login connection #${session.id.toLong(16)} opened with message ${loginInstructions.message}")
+        logger.info(""""login connection #${session.id.toLong(16)} opened with instructions $loginInstructions""")
         sendLoginInstructions(loginInstructions, session)
         super.afterConnectionEstablished(session)
     }
@@ -24,8 +24,8 @@ class LoginWebSocketHandler(private val loginClientManager: LoginClientManager) 
         super.afterConnectionClosed(session, status)
     }
 
-    private fun sendLoginInstructions(loginInstructions: LoginMessage.Payload.TweetRequest, session: WebSocketSession) {
-        val message = LoginMessage(messageType = LoginMessage.MessageType.TWEET_REQUEST, payload = loginInstructions)
+    private fun sendLoginInstructions(loginInstructions: LoginMessage.Data.TweetRequest, session: WebSocketSession) {
+        val message = LoginMessage(messageType = LoginMessage.MessageType.TWEET_REQUEST, data = loginInstructions)
         val json = ObjectMapper().writeValueAsString(message)
         session.sendMessage(TextMessage(json))
     }

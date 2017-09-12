@@ -19,7 +19,7 @@ class Login extends React.Component {
 
     _tweetRequest(request) {
         this.setState({
-            message: request.message,
+            text: request.text,
             hashtags: request.hashtag
         })
     }
@@ -42,16 +42,16 @@ class Login extends React.Component {
             )
         }
 
-        const message = this.state.message
+        const text = this.state.text
         const hashtags = this.state.hashtags
 
-        return message
-            ? (<Share url="''" options={{text: message, hashtags: hashtags, size: 'large'}}/>)
+        return text
+            ? (<Share url="''" options={{text: text, hashtags: hashtags, size: 'large'}}/>)
             : (null)
     }
 }
 
 const mapStateToProps = (state) => ({authenticated: !!state.authentication.token, loginSocket: state.configuration.twauthLoginSocket})
-const mapDispatchToProps = (dispatch) => ({authenticate: (payload) => dispatch({type: 'AUTHENTICATION_SET', payload: payload})})
+const mapDispatchToProps = (dispatch) => ({authenticate: (data) => dispatch({type: 'AUTHENTICATION_SET', data: data})})
 
 export default connect(mapStateToProps, mapDispatchToProps)(Login)

@@ -14,12 +14,12 @@ export default class LoginSocketHandler {
             switch (loginMessage.messageType) {
                 case 'TWEET_REQUEST':
                     this.onTweetRequest({
-                        message: loginMessage.payload.message,
-                        hashtag: loginMessage.payload.hashtag
+                        text: loginMessage.data.text,
+                        hashtag: loginMessage.data.hashtag
                     })
                     break
                 case 'AUTHENTICATION':
-                    this.onAuthenticate(loginMessage.payload)
+                    this.onAuthenticate(loginMessage.data)
                     break
                 default:
             }

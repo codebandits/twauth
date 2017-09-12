@@ -10,26 +10,26 @@ class LoginClientManagerInMemory(private val loginHashtag: String) : LoginClient
 
     private val clients = mutableListOf<LoginClient>()
 
-    override fun register(session: WebSocketSession): LoginMessage.Payload.TweetRequest {
+    override fun register(session: WebSocketSession): LoginMessage.Data.TweetRequest {
 
-        val message = UUID.randomUUID().toString()
+        val tweetText = UUID.randomUUID().toString()
 
         val client = LoginClient(
-                message = message,
+                tweetText = tweetText,
                 session = session
         )
 
         clients.add(client)
 
-        return LoginMessage.Payload.TweetRequest(
-                message = message,
+        return LoginMessage.Data.TweetRequest(
+                text = tweetText,
                 hashtag = loginHashtag
         )
     }
 
-    override fun get(message: String): Result<LoginClientManager.LoginClientNotFound, LoginClient> {
+    override fun get(text: String): Result<LoginClientManager.LoginClientNotFound, LoginClient> {
         return clients
-                .find { it.message == message }
+                .find { it.tweetText == text }
                 ?.let { Success<LoginClientManager.LoginClientNotFound, LoginClient>(it) }
                 ?: Failure(LoginClientManager.LoginClientNotFound)
     }

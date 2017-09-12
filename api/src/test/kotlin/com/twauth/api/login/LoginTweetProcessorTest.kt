@@ -31,10 +31,10 @@ class LoginTweetProcessorTest {
         on { screenName } doReturn "bruce"
     }
 
-    private val message = "login message"
+    private val tweetBody = "tweet-tweet"
 
     private val status: Status = mock {
-        on { text } doReturn "$message #$hashtag"
+        on { text } doReturn "$tweetBody #$hashtag"
         on { user } doReturn user
     }
 
@@ -43,7 +43,7 @@ class LoginTweetProcessorTest {
 
         @BeforeEach
         fun setUp() {
-            val client = LoginClient(message = message, session = session)
+            val client = LoginClient(tweetText = tweetBody, session = session)
             whenever(loginClientManager.get(any())).thenReturn(Success(client))
         }
 
@@ -51,11 +51,11 @@ class LoginTweetProcessorTest {
         fun `it should send the authentication message`() {
             subject.onStatus(status)
 
-            verify(loginClientManager).get(message)
+            verify(loginClientManager).get(tweetBody)
 
             argumentCaptor<TextMessage>().apply {
                 verify(session).sendMessage(capture())
-                val expectedMessage = """{"messageType":"AUTHENTICATION","payload":{"token":"batman","handle":"bruce"}}"""
+                val expectedMessage = """{"messageType":"AUTHENTICATION","data":{"token":"batman","handle":"bruce"}}"""
                 MatcherAssert.assertThat(String(firstValue.asBytes()), Matchers.equalTo(expectedMessage))
             }
         }

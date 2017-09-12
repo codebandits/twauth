@@ -20,7 +20,7 @@ class LoginClientManagerInMemoryTest {
     fun `register should provide LoginInstructions`() {
         val loginInstructions = subject.register(session)
 
-        assertThat(loginInstructions.message, not(isEmptyString()))
+        assertThat(loginInstructions.text, not(isEmptyString()))
         assertThat(loginInstructions.hashtag, not(isEmptyString()))
     }
 
@@ -28,7 +28,7 @@ class LoginClientManagerInMemoryTest {
     fun `get should retrieve the WebSocketSession`() {
         val loginInstructions = subject.register(session)
 
-        subject.get(loginInstructions.message) succeedsAnd {
+        subject.get(loginInstructions.text) succeedsAnd {
             assertThat(it.session, sameInstance(session))
         }
     }
@@ -50,7 +50,7 @@ class LoginClientManagerInMemoryTest {
         val loginInstructions = subject.register(session)
         subject.remove(session)
 
-        subject.get(loginInstructions.message) failsAnd {}
+        subject.get(loginInstructions.text) failsAnd {}
     }
 
     @Test

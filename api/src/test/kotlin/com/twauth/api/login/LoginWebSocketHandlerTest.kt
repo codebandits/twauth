@@ -28,8 +28,8 @@ class LoginWebSocketHandlerTest {
     @Nested
     inner class `when a connection is established` {
 
-        private val loginInstructions = LoginMessage.Payload.TweetRequest(
-                message = "I want to login",
+        private val loginInstructions = LoginMessage.Data.TweetRequest(
+                text = "I want to login",
                 hashtag = "please"
         )
 
@@ -51,7 +51,7 @@ class LoginWebSocketHandlerTest {
 
             argumentCaptor<TextMessage>().apply {
                 verify(session).sendMessage(capture())
-                val expectedMessage = """{"messageType":"TWEET_REQUEST","payload":{"message":"I want to login","hashtag":"please"}}"""
+                val expectedMessage = """{"messageType":"TWEET_REQUEST","data":{"text":"I want to login","hashtag":"please"}}"""
                 assertThat(String(firstValue.asBytes()), equalTo(expectedMessage))
             }
         }
