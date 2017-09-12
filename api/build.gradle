@@ -44,8 +44,8 @@ dependencies {
 	compile 'com.github.codebandits.results:results:master-SNAPSHOT'
 	compile("org.jetbrains.kotlin:kotlin-stdlib-jre8:${kotlinVersion}")
 	compile("org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}")
-	compile("org.twitter4j:twitter4j-core:${twitter4jVersion}")
-	compile("org.twitter4j:twitter4j-stream:${twitter4jVersion}")
+	compile('com.github.IEnoobong.twitter4j:twitter4j-core:master-SNAPSHOT')
+	compile('com.github.IEnoobong.twitter4j:twitter4j-stream:master-SNAPSHOT')
 	runtime('org.springframework.boot:spring-boot-devtools')
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 	testCompile "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"
