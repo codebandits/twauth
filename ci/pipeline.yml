@@ -230,6 +230,93 @@ jobs:
           chown -R browsertests:browsertests .
           su browsertests -c 'xvfb-run ./gradlew --gradle-user-home=.gradle e2e:test'
 
+- name: api production
+  serial: true
+  plan:
+  - aggregate:
+    - get: ci-image
+    - get: api-artifact
+      trigger: true
+      passed:
+      - e2e
+  - task: extract api
+    image: ci-image
+    config:
+      inputs:
+      - name: api-artifact
+      outputs:
+      - name: api-artifact-extract
+      platform: linux
+      run:
+        dir: api-artifact
+        path: sh
+        args:
+        - -exc
+        - |
+          tar xzf api-*.tgz -C ../api-artifact-extract
+  - put: cf-production
+    params:
+      manifest: api-artifact-extract/deployment/manifest-production.yml
+      environment_variables:
+        TWITTER_CONSUMER-KEY: ((twitter.production.consumer-key))
+        TWITTER_CONSUMER-SECRET: ((twitter.production.consumer-secret))
+        TWITTER_ACCESS-TOKEN: ((twitter.production.access-token))
+        TWITTER_ACCESS-TOKEN-SECRET: ((twitter.production.access-token-secret))
+- name: chat web production
+  serial: true
+  plan:
+  - aggregate:
+    - get: ci-image
+    - get: chat-web-artifact
+      trigger: true
+      passed:
+      - e2e
+  - task: extract chat web
+    image: ci-image
+    config:
+      inputs:
+      - name: chat-web-artifact
+      outputs:
+      - name: chat-web-artifact-extract
+      platform: linux
+      run:
+        dir: chat-web-artifact
+        path: sh
+        args:
+        - -exc
+        - |
+          tar xzf chat-*.tgz -C ../chat-web-artifact-extract
+  - put: cf-production
+    params:
+      manifest: chat-web-artifact-extract/deployment/manifest-production.yml
+- name: chat backend production
+  serial: true
+  plan:
+  - aggregate:
+    - get: ci-image
+    - get: chat-backend-artifact
+      trigger: true
+      passed:
+      - e2e
+  - task: extract chat backend
+    image: ci-image
+    config:
+      inputs:
+      - name: chat-backend-artifact
+      outputs:
+      - name: chat-backend-artifact-extract
+      platform: linux
+      run:
+        dir: chat-backend-artifact
+        path: sh
+        args:
+        - -exc
+        - |
+          tar xzf api-*.tgz -C ../chat-backend-artifact-extract
+  - put: cf-production
+    params:
+      manifest: chat-backend-artifact-extract/deployment/manifest-production.yml
+
 resource_types:
 - name: semver-latest
   type: docker-image
@@ -329,6 +416,14 @@ resources:
     password: ((cf.password))
     organization: ((cf.organization))
     space: ci
+- name: cf-production
+  type: cf
+  source:
+    api: ((cf.api))
+    username: ((cf.username))
+    password: ((cf.password))
+    organization: ((cf.organization))
+    space: production
 
 groups:
 - name: pipeline
@@ -337,6 +432,9 @@ groups:
   - chat web
   - chat backend
   - e2e
+  - api production
+  - chat web production
+  - chat backend production
 - name: ci-image
   jobs:
   - publish ci image
