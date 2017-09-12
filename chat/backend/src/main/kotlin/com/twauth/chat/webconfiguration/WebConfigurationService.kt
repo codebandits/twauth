@@ -3,25 +3,39 @@ package com.twauth.chat.webconfiguration
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
+import org.slf4j.LoggerFactory
+import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
 import org.springframework.util.ResourceUtils
 
-import java.io.File
-import java.io.IOException
-
 @Service
-class WebConfigurationService(@Value("\${spring.profiles.active}") springProfilesActive: String) {
+class WebConfigurationService(environment: Environment) {
 
+    private val logger = LoggerFactory.getLogger(javaClass)
+    private val objectMapper = ObjectMapper(YAMLFactory())
     private val configuration: JsonNode
 
     init {
-        val configurationFilePath = String.format("classpath:webconfiguration/%s.yml", springProfilesActive)
-        val configurationFile = ResourceUtils.getFile(configurationFilePath)
-        val objectMapper = ObjectMapper(YAMLFactory())
-        configuration = objectMapper.readTree(configurationFile)
+        configuration = when {
+            environment.activeProfiles.contains("production") -> loadConfiguration("production")
+            environment.activeProfiles.contains("ci") -> loadConfiguration("ci")
+            environment.activeProfiles.contains("local") -> loadConfiguration("local")
+            else -> emptyConfiguration
+        }
     }
+
+    private fun loadConfiguration(profile: String): JsonNode {
+        logger.info("Loading web configuration: {}", profile)
+        val configurationFilePath = String.format("classpath:webconfiguration/%s.yml", profile)
+        val configurationFile = ResourceUtils.getFile(configurationFilePath)
+        return objectMapper.readTree(configurationFile)
+    }
+
+    private val emptyConfiguration: JsonNode
+        get() {
+            logger.warn("No known profiles were active, creating empty web configuration")
+            return objectMapper.createObjectNode()
+        }
 
     fun getConfiguration(): JsonNode = configuration
 }
