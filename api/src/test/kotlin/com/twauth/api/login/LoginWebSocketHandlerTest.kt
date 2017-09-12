@@ -2,6 +2,7 @@ package com.twauth.api.login
 
 import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.argumentCaptor
+import com.nhaarman.mockito_kotlin.doReturn
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.same
 import com.nhaarman.mockito_kotlin.verify
@@ -20,7 +21,9 @@ class LoginWebSocketHandlerTest {
     private val loginClientManager: LoginClientManager = mock()
     private val subject = LoginWebSocketHandler(loginClientManager)
 
-    private val session: WebSocketSession = mock()
+    private val session: WebSocketSession = mock {
+        on { id } doReturn "0"
+    }
 
     @Nested
     inner class `when a connection is established` {

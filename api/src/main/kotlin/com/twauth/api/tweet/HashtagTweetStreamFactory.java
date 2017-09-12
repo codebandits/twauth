@@ -1,6 +1,8 @@
 package com.twauth.api.tweet;
 
 import com.twauth.api.login.LoginTweetProcessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import twitter4j.FilterQuery;
@@ -13,6 +15,8 @@ import javax.validation.constraints.NotNull;
 
 @Component
 public class HashtagTweetStreamFactory {
+
+    private final Logger logger = LoggerFactory.getLogger(HashtagTweetStreamFactory.class);
 
     private final String consumerKey;
     private final String consumerSecret;
@@ -41,6 +45,8 @@ public class HashtagTweetStreamFactory {
         cb.setOAuthAccessToken(accessToken);
         cb.setOAuthAccessTokenSecret(accessTokenSecret);
         Configuration configuration = cb.build();
+
+        logger.info("creating twitter stream for #{}", hashtag);
 
         TwitterStream stream = new TwitterStreamFactory(configuration).getInstance();
         stream.addListener(loginTweetProcessor);

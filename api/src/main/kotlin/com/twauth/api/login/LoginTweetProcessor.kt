@@ -39,7 +39,7 @@ class LoginTweetProcessor(
     }
 
     override fun onStatus(status: Status) {
-        logger.info("received Status: ", status)
+        logger.info("""received Status: "{}"""", status.text)
 
         val message = status.text.replace("#$hashtag", "").trim()
         val user = loginClientManager.get(message)
