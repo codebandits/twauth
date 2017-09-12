@@ -1,7 +1,6 @@
 package com.twauth.api.login
 
 import com.nhaarman.mockito_kotlin.mock
-import com.twauth.api.login.LoginClientManager
 import io.github.codebandits.results.failsAnd
 import io.github.codebandits.results.succeedsAnd
 import org.hamcrest.MatcherAssert.assertThat
@@ -11,10 +10,10 @@ import org.hamcrest.Matchers.sameInstance
 import org.junit.jupiter.api.Test
 import org.springframework.web.socket.WebSocketSession
 
-class LoginClientManagerTest {
+class LoginClientManagerInMemoryTest {
 
     private val hashtag = "auth"
-    private val subject = LoginClientManager(hashtag)
+    private val subject = LoginClientManagerInMemory(hashtag)
     private val session: WebSocketSession = mock()
 
     @Test

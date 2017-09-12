@@ -9,7 +9,7 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 
 @Configuration
 @EnableWebSocket
-class WebSocketConfiguration(private val loginClientManager: LoginClientManager) : WebSocketConfigurer {
+open class WebSocketConfiguration(private val loginClientManager: LoginClientManager) : WebSocketConfigurer {
 
     override fun registerWebSocketHandlers(registry: WebSocketHandlerRegistry) {
         registry.addHandler(LoginWebSocketHandler(loginClientManager), "/login").setAllowedOrigins("*")
