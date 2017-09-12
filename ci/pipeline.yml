@@ -24,6 +24,8 @@ jobs:
       - name: api-source
       outputs:
       - name: api-build
+      caches:
+      - path: .gradle
       platform: linux
       run:
         dir: api-source
@@ -33,7 +35,7 @@ jobs:
         - |
           VERSION=$(cat ../api-version/number)
           BUILD_DIR=../api-build/api-$VERSION
-          ./gradlew -Pversion=$VERSION api:test api:assemble
+          ./gradlew --gradle-user-home=.gradle -Pversion=$VERSION api:test api:assemble
           mkdir -p $BUILD_DIR
           cp -r api/build/libs/api-$VERSION.jar api/deployment $BUILD_DIR
           echo "path: ../api-$VERSION.jar" | tee -a $BUILD_DIR/deployment/manifest-*.yml
@@ -61,6 +63,9 @@ jobs:
       - name: chat-web-source
       outputs:
       - name: chat-web-build
+      caches:
+      - path: .gradle
+      - path: chat/web/node_modules
       platform: linux
       run:
         dir: chat-web-source
@@ -70,7 +75,7 @@ jobs:
         - |
           VERSION=$(cat ../chat-web-version/number)
           BUILD_DIR=../chat-web-build/chat-web-$VERSION
-          ./gradlew chat/web:yarn_install chat/web:yarn_test chat/web:yarn_run_build
+          ./gradlew --gradle-user-home=.gradle chat/web:yarn_install chat/web:yarn_test chat/web:yarn_run_build
           mkdir -p $BUILD_DIR
           cp -r chat/web/deployment $BUILD_DIR
           cp -r chat/web/build $BUILD_DIR/chat-web-$VERSION
@@ -99,6 +104,8 @@ jobs:
       - name: chat-backend-source
       outputs:
       - name: chat-backend-build
+      caches:
+      - path: .gradle
       platform: linux
       run:
         dir: chat-backend-source
@@ -108,7 +115,7 @@ jobs:
         - |
           VERSION=$(cat ../chat-backend-version/number)
           BUILD_DIR=../chat-backend-build/chat-backend-$VERSION
-          ./gradlew -Pversion=$VERSION chat/backend:test chat/backend:assemble
+          ./gradlew --gradle-user-home=.gradle -Pversion=$VERSION chat/backend:test chat/backend:assemble
           mkdir -p $BUILD_DIR
           cp -r chat/backend/build/libs/chat-backend-$VERSION.jar chat/backend/deployment $BUILD_DIR
           echo "path: ../chat-backend-$VERSION.jar" | tee -a $BUILD_DIR/deployment/manifest-*.yml
@@ -211,6 +218,8 @@ jobs:
     config:
       inputs:
       - name: e2e-source
+      caches:
+      - path: .gradle
       platform: linux
       run:
         dir: e2e-source
@@ -219,7 +228,7 @@ jobs:
         - -exc
         - |
           chown -R browsertests:browsertests .
-          su browsertests -c 'xvfb-run ./gradlew e2e:test'
+          su browsertests -c 'xvfb-run ./gradlew --gradle-user-home=.gradle e2e:test'
 
 resource_types:
 - name: semver-latest
