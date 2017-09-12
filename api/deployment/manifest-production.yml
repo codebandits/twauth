@@ -1,7 +1,7 @@
 name: twauth-api
 memory: 1GB
 routes:
-- route: twauth.io
+- route: twauth.cfapps.io
 buildpack: java_buildpack
 env:
   SPRING_PROFILES_ACTIVE: production
