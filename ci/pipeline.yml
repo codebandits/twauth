@@ -6,7 +6,7 @@ jobs:
     trigger: true
   - put: ci-image
     params:
-      build: ci-image-source/ci/docker
+      build: ci-image-source/pipeline/docker
 
 - name: api
   plan:
