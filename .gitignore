@@ -4,7 +4,7 @@ node_modules/
 build/
 out/
 
-ci/secrets.yml
+pipeline/secrets.yml
 
 .idea/*
 !/.idea/runConfigurations/

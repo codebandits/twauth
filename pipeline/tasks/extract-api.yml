@@ -1,0 +1,13 @@
+---
+inputs:
+- name: api-artifact
+outputs:
+- name: api-artifact-extract
+platform: linux
+run:
+  dir: api-artifact
+  path: sh
+  args:
+  - -exc
+  - |
+    tar xzf api-*.tgz -C ../api-artifact-extract

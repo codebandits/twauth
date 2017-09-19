@@ -1,0 +1,13 @@
+---
+inputs:
+- name: chat-backend-artifact
+outputs:
+- name: chat-backend-artifact-extract
+platform: linux
+run:
+  dir: chat-backend-artifact
+  path: sh
+  args:
+  - -exc
+  - |
+    tar xzf chat-backend-*.tgz -C ../chat-backend-artifact-extract

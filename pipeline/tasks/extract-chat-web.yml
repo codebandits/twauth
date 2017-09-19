@@ -1,0 +1,13 @@
+---
+inputs:
+- name: chat-web-artifact
+outputs:
+- name: chat-web-artifact-extract
+platform: linux
+run:
+  dir: chat-web-artifact
+  path: sh
+  args:
+  - -exc
+  - |
+    tar xzf chat-*.tgz -C ../chat-web-artifact-extract

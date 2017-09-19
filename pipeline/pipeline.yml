@@ -1,3 +1,4 @@
+---
 jobs:
 
 - name: publish ci image
@@ -16,31 +17,10 @@ jobs:
       trigger: true
     - get: api-version
       params: {bump: patch}
+    - get: pipeline-tasks-source
   - task: test and build
+    file: pipeline-tasks-source/pipeline/tasks/test-build-api.yml
     image: ci-image
-    config:
-      inputs:
-      - name: api-version
-      - name: api-source
-      outputs:
-      - name: api-build
-      caches:
-      - path: .gradle
-      platform: linux
-      run:
-        dir: api-source
-        path: sh
-        args:
-        - -exc
-        - |
-          VERSION=$(cat ../api-version/number)
-          BUILD_DIR=../api-build/api-$VERSION
-          ./gradlew --gradle-user-home=.gradle -Pversion=$VERSION api:test api:assemble
-          mkdir -p $BUILD_DIR
-          cp -r api/build/libs/api-$VERSION.jar api/deployment $BUILD_DIR
-          echo "path: ../api-$VERSION.jar" | tee -a $BUILD_DIR/deployment/manifest-*.yml
-          cd $BUILD_DIR
-          tar czf ../api-$VERSION.tgz .
   - put: api-artifact
     params:
       file: ./api-build/api-*.tgz
@@ -55,33 +35,10 @@ jobs:
       trigger: true
     - get: chat-web-version
       params: {bump: patch}
+    - get: pipeline-tasks-source
   - task: test and build
+    file: pipeline-tasks-source/pipeline/tasks/test-build-chat-web.yml
     image: ci-image
-    config:
-      inputs:
-      - name: chat-web-version
-      - name: chat-web-source
-      outputs:
-      - name: chat-web-build
-      caches:
-      - path: .gradle
-      - path: chat/web/node_modules
-      platform: linux
-      run:
-        dir: chat-web-source
-        path: sh
-        args:
-        - -exc
-        - |
-          VERSION=$(cat ../chat-web-version/number)
-          BUILD_DIR=../chat-web-build/chat-web-$VERSION
-          ./gradlew --gradle-user-home=.gradle chat/web:yarn_install chat/web:yarn_test chat/web:yarn_run_build
-          mkdir -p $BUILD_DIR
-          cp -r chat/web/deployment $BUILD_DIR
-          cp -r chat/web/build $BUILD_DIR/chat-web-$VERSION
-          echo "path: ../chat-web-$VERSION" | tee -a $BUILD_DIR/deployment/manifest-*.yml
-          cd $BUILD_DIR
-          tar czf ../chat-web-$VERSION.tgz .
   - put: chat-web-artifact
     params:
       file: ./chat-web-build/chat-web-*.tgz
@@ -96,31 +53,10 @@ jobs:
       trigger: true
     - get: chat-backend-version
       params: {bump: patch}
+    - get: pipeline-tasks-source
   - task: test and build
+    file: pipeline-tasks-source/pipeline/tasks/test-build-chat-backend.yml
     image: ci-image
-    config:
-      inputs:
-      - name: chat-backend-version
-      - name: chat-backend-source
-      outputs:
-      - name: chat-backend-build
-      caches:
-      - path: .gradle
-      platform: linux
-      run:
-        dir: chat-backend-source
-        path: sh
-        args:
-        - -exc
-        - |
-          VERSION=$(cat ../chat-backend-version/number)
-          BUILD_DIR=../chat-backend-build/chat-backend-$VERSION
-          ./gradlew --gradle-user-home=.gradle -Pversion=$VERSION chat/backend:test chat/backend:assemble
-          mkdir -p $BUILD_DIR
-          cp -r chat/backend/build/libs/chat-backend-$VERSION.jar chat/backend/deployment $BUILD_DIR
-          echo "path: ../chat-backend-$VERSION.jar" | tee -a $BUILD_DIR/deployment/manifest-*.yml
-          cd $BUILD_DIR
-          tar czf ../chat-backend-$VERSION.tgz .
   - put: chat-backend-artifact
     params:
       file: ./chat-backend-build/chat-backend-*.tgz
@@ -145,52 +81,17 @@ jobs:
       trigger: true
       passed:
       - chat backend
+    - get: pipeline-tasks-source
   - aggregate:
     - task: extract api
+      file: pipeline-tasks-source/pipeline/tasks/extract-api.yml
       image: ci-image
-      config:
-        inputs:
-        - name: api-artifact
-        outputs:
-        - name: api-artifact-extract
-        platform: linux
-        run:
-          dir: api-artifact
-          path: sh
-          args:
-          - -exc
-          - |
-            tar xzf api-*.tgz -C ../api-artifact-extract
     - task: extract chat web
+      file: pipeline-tasks-source/pipeline/tasks/extract-chat-web.yml
       image: ci-image
-      config:
-        inputs:
-        - name: chat-web-artifact
-        outputs:
-        - name: chat-web-artifact-extract
-        platform: linux
-        run:
-          dir: chat-web-artifact
-          path: sh
-          args:
-          - -exc
-          - |
-            tar xzf chat-*.tgz -C ../chat-web-artifact-extract
     - task: extract chat backend
+      file: pipeline-tasks-source/pipeline/tasks/extract-chat-backend.yml
       image: ci-image
-      config:
-        inputs:
-        - name: chat-backend-artifact
-        outputs:
-        - name: chat-backend-artifact-extract
-        platform: linux
-        run:
-          dir: chat-backend-artifact
-          path: sh
-          args:
-          - -exc
-          - |
-            tar xzf chat-backend-*.tgz -C ../chat-backend-artifact-extract
   - aggregate:
     - put: cf-ci
       params:
@@ -208,6 +109,7 @@ jobs:
         manifest: chat-backend-artifact-extract/deployment/manifest-ci.yml
 
   - task: end to end tests
+    file: pipeline-tasks-source/pipeline/tasks/e2e.yml
     image: ci-image
     params:
       API_URL: http://twauth-api-ci.cfapps.io/
@@ -215,20 +117,6 @@ jobs:
       TWITTER_USERNAME: ((e2e.twitter_username))
       TWITTER_PASSWORD: ((e2e.twitter_password))
     privileged: true
-    config:
-      inputs:
-      - name: e2e-source
-      caches:
-      - path: .gradle
-      platform: linux
-      run:
-        dir: e2e-source
-        path: sh
-        args:
-        - -exc
-        - |
-          chown -R browsertests:browsertests .
-          su browsertests -c 'xvfb-run ./gradlew --gradle-user-home=.gradle e2e:test'
 
 - name: api production
   serial: true
@@ -239,21 +127,10 @@ jobs:
       trigger: true
       passed:
       - e2e
+    - get: pipeline-tasks-source
   - task: extract api
+    file: pipeline-tasks-source/pipeline/tasks/extract-api.yml
     image: ci-image
-    config:
-      inputs:
-      - name: api-artifact
-      outputs:
-      - name: api-artifact-extract
-      platform: linux
-      run:
-        dir: api-artifact
-        path: sh
-        args:
-        - -exc
-        - |
-          tar xzf api-*.tgz -C ../api-artifact-extract
   - put: cf-production
     params:
       manifest: api-artifact-extract/deployment/manifest-production.yml
@@ -262,6 +139,7 @@ jobs:
         TWITTER_CONSUMER-SECRET: ((twitter.production.consumer-secret))
         TWITTER_ACCESS-TOKEN: ((twitter.production.access-token))
         TWITTER_ACCESS-TOKEN-SECRET: ((twitter.production.access-token-secret))
+
 - name: chat web production
   serial: true
   plan:
@@ -271,24 +149,14 @@ jobs:
       trigger: true
       passed:
       - e2e
+    - get: pipeline-tasks-source
   - task: extract chat web
+    file: pipeline-tasks-source/pipeline/tasks/extract-chat-web.yml
     image: ci-image
-    config:
-      inputs:
-      - name: chat-web-artifact
-      outputs:
-      - name: chat-web-artifact-extract
-      platform: linux
-      run:
-        dir: chat-web-artifact
-        path: sh
-        args:
-        - -exc
-        - |
-          tar xzf chat-web-*.tgz -C ../chat-web-artifact-extract
   - put: cf-production
     params:
       manifest: chat-web-artifact-extract/deployment/manifest-production.yml
+
 - name: chat backend production
   serial: true
   plan:
@@ -298,21 +166,10 @@ jobs:
       trigger: true
       passed:
       - e2e
+    - get: pipeline-tasks-source
   - task: extract chat backend
+    file: pipeline-tasks-source/pipeline/tasks/extract-chat-backend.yml
     image: ci-image
-    config:
-      inputs:
-      - name: chat-backend-artifact
-      outputs:
-      - name: chat-backend-artifact-extract
-      platform: linux
-      run:
-        dir: chat-backend-artifact
-        path: sh
-        args:
-        - -exc
-        - |
-          tar xzf chat-backend-*.tgz -C ../chat-backend-artifact-extract
   - put: cf-production
     params:
       manifest: chat-backend-artifact-extract/deployment/manifest-production.yml
@@ -402,6 +259,13 @@ resources:
     branch: master
     paths:
     - ci/docker
+- name: pipeline-tasks-source
+  type: git
+  source:
+    uri: https://github.com/codebandits/twauth.git
+    branch: master
+    paths:
+    - pipeline/tasks
 - name: ci-image
   type: docker-image
   source:

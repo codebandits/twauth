@@ -1,0 +1,14 @@
+---
+inputs:
+- name: e2e-source
+caches:
+- path: .gradle
+platform: linux
+run:
+  dir: e2e-source
+  path: sh
+  args:
+  - -exc
+  - |
+    chown -R browsertests:browsertests .
+    su browsertests -c 'xvfb-run ./gradlew --gradle-user-home=.gradle e2e:test'

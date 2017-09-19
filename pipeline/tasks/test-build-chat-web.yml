@@ -1,0 +1,25 @@
+---
+inputs:
+- name: chat-web-version
+- name: chat-web-source
+outputs:
+- name: chat-web-build
+caches:
+- path: .gradle
+- path: chat/web/node_modules
+platform: linux
+run:
+  dir: chat-web-source
+  path: sh
+  args:
+  - -exc
+  - |
+    VERSION=$(cat ../chat-web-version/number)
+    BUILD_DIR=../chat-web-build/chat-web-$VERSION
+    ./gradlew --gradle-user-home=.gradle chat/web:yarn_install chat/web:yarn_test chat/web:yarn_run_build
+    mkdir -p $BUILD_DIR
+    cp -r chat/web/deployment $BUILD_DIR
+    cp -r chat/web/build $BUILD_DIR/chat-web-$VERSION
+    echo "path: ../chat-web-$VERSION" | tee -a $BUILD_DIR/deployment/manifest-*.yml
+    cd $BUILD_DIR
+    tar czf ../chat-web-$VERSION.tgz .
