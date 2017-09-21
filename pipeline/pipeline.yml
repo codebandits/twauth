@@ -258,7 +258,7 @@ resources:
     uri: https://github.com/codebandits/twauth.git
     branch: master
     paths:
-    - ci/docker
+    - pipeline/docker
 - name: pipeline-tasks-source
   type: git
   source:
