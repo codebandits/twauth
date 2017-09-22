@@ -1,7 +1,7 @@
 FROM ubuntu:latest
 
 RUN apt-get update \
-    && apt-get install -y curl unzip bzip2 xvfb openjdk-8-jdk lsb-release \
+    && apt-get install -y curl unzip bzip2 xvfb openjdk-8-jdk lsb-release build-essential \
     && curl -s https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
     && curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - \
     && echo "deb http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
