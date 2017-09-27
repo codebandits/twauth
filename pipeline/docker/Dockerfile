@@ -22,4 +22,5 @@ RUN CHROMEDRIVER_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_R
 ENV CI=true
 ENV GRADLE_OPTS="-Dorg.gradle.daemon=false"
 
+RUN usermod -d /var/lib/mysql mysql
 RUN useradd browsertests --create-home --shell /bin/bash
