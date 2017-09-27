@@ -20,6 +20,7 @@ RUN CHROMEDRIVER_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_R
     && ln -fs /opt/chromedriver-$CHROMEDRIVER_VERSION/chromedriver /usr/local/bin/chromedriver
 
 ENV CI=true
+ENV TERM=dumb
 ENV GRADLE_OPTS="-Dorg.gradle.daemon=false"
 
 RUN usermod -d /var/lib/mysql mysql
