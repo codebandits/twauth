@@ -12,6 +12,6 @@ class WebConfigurationController(webConfigurationService: WebConfigurationServic
 
     private val configuration: JsonNode = webConfigurationService.getConfiguration()
 
-    @RequestMapping(value = "/configuration", method = [RequestMethod.GET])
+    @RequestMapping(value = "/configuration", method = arrayOf(RequestMethod.GET))
     fun configuration(): ResponseEntity<JsonNode> = ResponseEntity.ok(configuration)
 }
