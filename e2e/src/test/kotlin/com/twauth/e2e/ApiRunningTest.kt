@@ -17,7 +17,7 @@ class ApiRunningTest {
     fun `should be running`() {
 
         val client = HttpClientBuilder.create().build()
-        val response = client.execute(HttpGet(API_URL + "/application/health"))
+        val response = client.execute(HttpGet(API_URL + "/application/status"))
         assertThat(response.statusLine.statusCode, equalTo(HttpStatus.SC_OK))
 
         val json = BasicResponseHandler().handleResponse(response)
