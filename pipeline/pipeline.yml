@@ -1,18 +1,9 @@
 ---
 jobs:
 
-- name: publish ci image
-  plan:
-  - get: ci-image-source
-    trigger: true
-  - put: ci-image
-    params:
-      build: ci-image-source/pipeline/docker
-
 - name: api
   plan:
   - aggregate:
-    - get: ci-image
     - get: api-source
       trigger: true
     - get: api-version
@@ -20,7 +11,6 @@ jobs:
     - get: pipeline-tasks-source
   - task: test and build
     file: pipeline-tasks-source/pipeline/tasks/test-build-api.yml
-    image: ci-image
   - put: api-artifact
     params:
       file: ./api-build/api-*.tgz
@@ -30,7 +20,6 @@ jobs:
 - name: chat web
   plan:
   - aggregate:
-    - get: ci-image
     - get: chat-web-source
       trigger: true
     - get: chat-web-version
@@ -38,7 +27,6 @@ jobs:
     - get: pipeline-tasks-source
   - task: test and build
     file: pipeline-tasks-source/pipeline/tasks/test-build-chat-web.yml
-    image: ci-image
   - put: chat-web-artifact
     params:
       file: ./chat-web-build/chat-web-*.tgz
@@ -48,7 +36,6 @@ jobs:
 - name: chat backend
   plan:
   - aggregate:
-    - get: ci-image
     - get: chat-backend-source
       trigger: true
     - get: chat-backend-version
@@ -56,7 +43,6 @@ jobs:
     - get: pipeline-tasks-source
   - task: test and build
     file: pipeline-tasks-source/pipeline/tasks/test-build-chat-backend.yml
-    image: ci-image
   - put: chat-backend-artifact
     params:
       file: ./chat-backend-build/chat-backend-*.tgz
@@ -67,7 +53,6 @@ jobs:
   serial: true
   plan:
   - aggregate:
-    - get: ci-image
     - get: e2e-source
       trigger: true
     - get: api-artifact
@@ -85,13 +70,10 @@ jobs:
   - aggregate:
     - task: extract api
       file: pipeline-tasks-source/pipeline/tasks/extract-api.yml
-      image: ci-image
     - task: extract chat web
       file: pipeline-tasks-source/pipeline/tasks/extract-chat-web.yml
-      image: ci-image
     - task: extract chat backend
       file: pipeline-tasks-source/pipeline/tasks/extract-chat-backend.yml
-      image: ci-image
   - aggregate:
     - put: cf-ci
       params:
@@ -110,7 +92,6 @@ jobs:
 
   - task: end to end tests
     file: pipeline-tasks-source/pipeline/tasks/e2e.yml
-    image: ci-image
     params:
       API_URL: http://twauth-api-ci.cfapps.io/
       CHAT_URL: http://twauth-chat-ci.cfapps.io/
@@ -122,7 +103,6 @@ jobs:
   serial: true
   plan:
   - aggregate:
-    - get: ci-image
     - get: api-artifact
       trigger: true
       passed:
@@ -130,7 +110,6 @@ jobs:
     - get: pipeline-tasks-source
   - task: extract api
     file: pipeline-tasks-source/pipeline/tasks/extract-api.yml
-    image: ci-image
   - put: cf-production
     params:
       manifest: api-artifact-extract/deployment/manifest-production.yml
@@ -144,7 +123,6 @@ jobs:
   serial: true
   plan:
   - aggregate:
-    - get: ci-image
     - get: chat-web-artifact
       trigger: true
       passed:
@@ -152,7 +130,6 @@ jobs:
     - get: pipeline-tasks-source
   - task: extract chat web
     file: pipeline-tasks-source/pipeline/tasks/extract-chat-web.yml
-    image: ci-image
   - put: cf-production
     params:
       manifest: chat-web-artifact-extract/deployment/manifest-production.yml
@@ -161,7 +138,6 @@ jobs:
   serial: true
   plan:
   - aggregate:
-    - get: ci-image
     - get: chat-backend-artifact
       trigger: true
       passed:
@@ -169,16 +145,11 @@ jobs:
     - get: pipeline-tasks-source
   - task: extract chat backend
     file: pipeline-tasks-source/pipeline/tasks/extract-chat-backend.yml
-    image: ci-image
   - put: cf-production
     params:
       manifest: chat-backend-artifact-extract/deployment/manifest-production.yml
 
 resource_types:
-- name: semver-latest
-  type: docker-image
-  source:
-    repository: concourse/semver-resource
 - name: google-cloud-storage
   type: docker-image
   source:
@@ -186,43 +157,43 @@ resource_types:
 
 resources:
 - name: api-version
-  type: semver-latest
+  type: semver
   source:
     driver: gcs
     bucket: twauth-versions
     key: api-version
-    json_key: ((gcr-key))
+    json_key: ((gcp-credential))
 - name: chat-web-version
-  type: semver-latest
+  type: semver
   source:
     driver: gcs
     bucket: twauth-versions
     key: chat-web-version
-    json_key: ((gcr-key))
+    json_key: ((gcp-credential))
 - name: chat-backend-version
-  type: semver-latest
+  type: semver
   source:
     driver: gcs
     bucket: twauth-versions
     key: chat-backend-version
-    json_key: ((gcr-key))
+    json_key: ((gcp-credential))
 - name: api-artifact
   type: google-cloud-storage
   source:
     bucket: twauth-artifacts
-    json_key: ((gcr-key))
+    json_key: ((gcp-credential))
     regexp: api-(.*).tgz
 - name: chat-web-artifact
   type: google-cloud-storage
   source:
     bucket: twauth-artifacts
-    json_key: ((gcr-key))
+    json_key: ((gcp-credential))
     regexp: chat-web-(.*).tgz
 - name: chat-backend-artifact
   type: google-cloud-storage
   source:
     bucket: twauth-artifacts
-    json_key: ((gcr-key))
+    json_key: ((gcp-credential))
     regexp: chat-backend-(.*).tgz
 - name: api-source
   type: git
@@ -252,13 +223,6 @@ resources:
     branch: master
     paths:
     - e2e
-- name: ci-image-source
-  type: git
-  source:
-    uri: https://github.com/codebandits/twauth.git
-    branch: master
-    paths:
-    - pipeline/docker
 - name: pipeline-tasks-source
   type: git
   source:
@@ -266,12 +230,6 @@ resources:
     branch: master
     paths:
     - pipeline/tasks
-- name: ci-image
-  type: docker-image
-  source:
-    repository: gcr.io/twauth-178923/ci
-    username: _json_key
-    password: ((gcr-key))
 - name: cf-ci
   type: cf
   source:
@@ -299,6 +257,3 @@ groups:
   - api production
   - chat web production
   - chat backend production
-- name: ci-image
-  jobs:
-  - publish ci image

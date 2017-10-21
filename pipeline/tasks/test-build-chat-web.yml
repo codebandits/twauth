@@ -8,6 +8,9 @@ caches:
 - path: .gradle
 - path: chat/web/node_modules
 platform: linux
+image_resource:
+  type: docker-image
+  source: {repository: codebandits/rookery}
 run:
   dir: chat-web-source
   path: sh
